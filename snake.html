@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        canvas {
+            background-color: #000;
+            border: 2px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Ukuran grid dan snake
+        const gridSize = 20;
+        const tileCount = canvas.width / gridSize;
+
+        let snake = [
+            { x: 10, y: 10 }
+        ];
+
+        let apple = {
+            x: Math.floor(Math.random() * tileCount),
+            y: Math.floor(Math.random() * tileCount)
+        };
+
+        let velocity = { x: 0, y: 0 };
+        let score = 0;
+
+        // Mengatur arah gerakan snake
+        document.addEventListener("keydown", (e) => {
+            switch (e.key) {
+                case "ArrowUp":
+                    if (velocity.y === 0) {
+                        velocity = { x: 0, y: -1 };
+                    }
+                    break;
+                case "ArrowDown":
+                    if (velocity.y === 0) {
+                        velocity = { x: 0, y: 1 };
+                    }
+                    break;
+                case "ArrowLeft":
+                    if (velocity.x === 0) {
+                        velocity = { x: -1, y: 0 };
+                    }
+                    break;
+                case "ArrowRight":
+                    if (velocity.x === 0) {
+                        velocity = { x: 1, y: 0 };
+                    }
+                    break;
+            }
+        });
+
+        // Function untuk menjalankan game
+        function gameLoop() {
+            // Update posisi snake
+            const head = { x: snake[0].x + velocity.x, y: snake[0].y + velocity.y };
+            snake.unshift(head);
+
+            // Jika snake makan apple
+            if (head.x === apple.x && head.y === apple.y) {
+                score++;
+                apple = {
+                    x: Math.floor(Math.random() * tileCount),
+                    y: Math.floor(Math.random() * tileCount)
+                };
+            } else {
+                snake.pop(); // Hapus ekor snake jika tidak makan
+            }
+
+            // Game over jika snake menabrak dinding atau dirinya sendiri
+            if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount || snakeCollision(head)) {
+                resetGame();
+            }
+
+            // Gambar background
+            ctx.fillStyle = "#000";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Gambar apple
+            ctx.fillStyle = "red";
+            ctx.fillRect(apple.x * gridSize, apple.y * gridSize, gridSize, gridSize);
+
+            // Gambar snake
+            ctx.fillStyle = "lime";
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
+            });
+
+            // Jalankan loop
+            setTimeout(gameLoop, 1000 / 10); // Kecepatan snake 10 FPS
+        }
+
+        // Function untuk mengecek apakah snake menabrak dirinya sendiri
+        function snakeCollision(head) {
+            for (let i = 1; i < snake.length; i++) {
+                if (snake[i].x === head.x && snake[i].y === head.y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Function untuk mereset game
+        function resetGame() {
+            snake = [{ x: 10, y: 10 }];
+            velocity = { x: 0, y: 0 };
+            score = 0;
+        }
+
+        // Mulai game
+        gameLoop();
+    </script>
+</body>
+</html>
